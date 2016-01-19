@@ -32,6 +32,7 @@ import htsjdk.samtools.cram.structure.Slice;
 import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.BufferedLineReader;
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.Log;
 
 import java.io.ByteArrayInputStream;
@@ -47,6 +48,8 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+
+import com.novelbio.base.fileOperate.SeekablePathOutputStream;
 
 /**
  * A collection of methods to open and close CRAM files.
@@ -300,7 +303,7 @@ public class CramIO {
      */
     public static boolean replaceCramHeader(final File file, final CramHeader newHeader) throws IOException {
 
-        final CountingInputStream countingInputStream = new CountingInputStream(new FileInputStream(file));
+        final CountingInputStream countingInputStream = new CountingInputStream(IOUtil.openFileForReading(file));
 
         final CramHeader header = readFormatDefinition(countingInputStream);
         final Container c = ContainerIO.readContainerHeader(header.getVersion().major, countingInputStream);
@@ -314,7 +317,7 @@ public class CramIO {
             log.error("Failed to replace CRAM header because the new header does not fit.");
             return false;
         }
-        final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+        final SeekablePathOutputStream randomAccessFile = new SeekablePathOutputStream(IOUtil.getPath(file));
         randomAccessFile.seek(pos);
         randomAccessFile.write(byteArrayOutputStream.getBuffer(), 0, byteArrayOutputStream.size());
         randomAccessFile.close();

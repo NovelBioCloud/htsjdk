@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * {@link htsjdk.samtools.BAMFileReader BAMFileReader} analogue for CRAM files.
  * Supports random access using BAI index file formats.
@@ -149,7 +151,7 @@ public class CRAMFileReader extends SamReader.ReaderImplementation implements Sa
     public CRAMFileReader(final File cramFile,
                           final File indexFile, final ReferenceSource referenceSource,
                           final ValidationStringency validationStringency) throws IOException {
-        this(new FileInputStream(cramFile), indexFile, referenceSource, validationStringency);
+        this(FileOperate.getInputStream(cramFile), indexFile, referenceSource, validationStringency);
         this.cramFile = cramFile;
     }
 
@@ -245,7 +247,7 @@ public class CRAMFileReader extends SamReader.ReaderImplementation implements Sa
         try {
             final CRAMIterator newIterator;
             if (cramFile != null) {
-                newIterator = new CRAMIterator(new FileInputStream(cramFile),
+                newIterator = new CRAMIterator(FileOperate.getInputStream(cramFile),
                         referenceSource, validationStringency);
             } else
                 newIterator = new CRAMIterator(inputStream, referenceSource, validationStringency);

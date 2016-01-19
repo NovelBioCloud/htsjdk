@@ -24,6 +24,7 @@ import htsjdk.samtools.cram.io.InputStreamUtils;
 import htsjdk.samtools.reference.ReferenceSequence;
 import htsjdk.samtools.reference.ReferenceSequenceFile;
 import htsjdk.samtools.reference.ReferenceSequenceFileFactory;
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.Log;
 import htsjdk.samtools.util.SequenceUtil;
 
@@ -51,7 +52,7 @@ public class ReferenceSource {
     }
 
     public ReferenceSource(final File file) {
-        this(file == null ? null : file.toPath());
+        this(file == null ? null : IOUtil.getPath(file));
     }
 
     public ReferenceSource(final Path path) {

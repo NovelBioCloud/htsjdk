@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Accumulate a list of longs that can then be sorted in natural order and iterated over.
  * If there are more values accumulated than a specified maximum, values are spilled to disk.
@@ -168,8 +170,9 @@ public class SortingLongCollection {
             DataOutputStream os = null;
             try {
                 final long numBytes = this.numValuesInRam * SIZEOF;
-                os = new DataOutputStream(IOUtil.maybeBufferOutputStream(new FileOutputStream(f)));
-                f.deleteOnExit();
+                os = new DataOutputStream(IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(f)));
+//                f.deleteOnExit();
+                FileOperate.deleteOnExit(f);
                 for (int i = 0; i < this.numValuesInRam; ++i) {
                     os.writeLong(ramValues[i]);
                 }
@@ -254,9 +257,9 @@ public class SortingLongCollection {
         FileValueIterator(final File file) {
             this.file = file;
             try {
-                is = new DataInputStream(IOUtil.maybeBufferInputStream(new FileInputStream(file)));
+                is = new DataInputStream(IOUtil.maybeBufferInputStream(FileOperate.getInputStream(file)));
                 next();
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 throw new RuntimeIOException(file.getAbsolutePath(), e);
             }
         }

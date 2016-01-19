@@ -39,8 +39,11 @@ import htsjdk.tribble.index.tabix.TabixIndexCreator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.EnumSet;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /*
  * Created with IntelliJ IDEA.
@@ -393,8 +396,8 @@ public class VariantContextWriterBuilder {
         OutputStream outStreamFromFile = this.outStream;
         if (FILE_TYPES.contains(this.outType)) {
             try {
-                outStreamFromFile = IOUtil.maybeBufferOutputStream(new FileOutputStream(outFile), bufferSize);
-            } catch (final FileNotFoundException e) {
+                outStreamFromFile = IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(outFile), bufferSize);
+            } catch (final IOException e) {
                 throw new RuntimeIOException("File not found: " + outFile, e);
             }
 

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * A wrapper around an {@code InputStream} which performs it's own buffering, and keeps track of the position.
  * 
@@ -177,7 +179,7 @@ public final class PositionalBufferedStream extends InputStream implements Posit
         System.out.printf("Testing %s%n", args[0]);
         for (int i = 0; i < iterations; i++) {
             if ( includeInputStream ) {
-                final InputStream is = new FileInputStream(testFile);
+                final InputStream is = FileOperate.getInputStream(testFile);
                 if ( doReadFileInChunks )
                     readFileInChunks("InputStream", is);
                 else
@@ -185,7 +187,7 @@ public final class PositionalBufferedStream extends InputStream implements Posit
                 is.close();
             }
 
-            final PositionalBufferedStream pbs = new PositionalBufferedStream(new FileInputStream(testFile));
+            final PositionalBufferedStream pbs = new PositionalBufferedStream(FileOperate.getInputStream(testFile));
             if ( doReadFileInChunks )
                 readFileInChunks("PositionalBufferedStream", pbs);
             else

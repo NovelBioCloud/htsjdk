@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * A single-ended FIFO queue. Writes elements to temporary files when the queue gets too big.
  * External references to elements in this queue are NOT guaranteed to be valid, due to the disk write/read
@@ -251,7 +253,7 @@ public class DiskBackedQueue<E> implements Queue<E> {
         try {
             if (this.diskRecords == null) {
                 this.diskRecords = newTempFile();
-                this.outputStream = tempStreamFactory.wrapTempOutputStream(new FileOutputStream(this.diskRecords), Defaults.BUFFER_SIZE);
+                this.outputStream = tempStreamFactory.wrapTempOutputStream(FileOperate.getOutputStream(this.diskRecords), Defaults.BUFFER_SIZE);
                 this.codec.setOutputStream(this.outputStream);
             }
             this.codec.encode(record);
@@ -306,7 +308,7 @@ public class DiskBackedQueue<E> implements Queue<E> {
         }
         try {
             if (this.inputStream == null) {
-                inputStream = new FileInputStream(file);
+                inputStream = FileOperate.getInputStream(file);
                 this.codec.setInputStream(tempStreamFactory.wrapTempInputStream(inputStream, Defaults.BUFFER_SIZE));
             }
             final E record = this.codec.decode(); // NB: returns null if end-of-file is reached.

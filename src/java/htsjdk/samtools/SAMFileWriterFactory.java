@@ -35,6 +35,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Create a writer for writing SAM, BAM, or CRAM files.
  */
@@ -172,7 +174,7 @@ public class SAMFileWriterFactory {
             if (this.createMd5File && !createMd5File) {
                 log.warn("Cannot create MD5 file for BAM because output file is not a regular file: " + outputFile.getAbsolutePath());
             }
-            OutputStream os = IOUtil.maybeBufferOutputStream(new FileOutputStream(outputFile, false), bufferSize);
+            OutputStream os = IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(outputFile, false), bufferSize);
             if (createMd5File) os = new Md5CalculatingOutputStream(os, new File(outputFile.getAbsolutePath() + ".md5"));
             final BAMFileWriter ret = new BAMFileWriter(os, outputFile, compressionLevel);
             final boolean createIndex = this.createIndex && IOUtil.isRegularPath(outputFile);
@@ -210,7 +212,7 @@ public class SAMFileWriterFactory {
     public SAMFileWriter makeSAMWriter(final SAMFileHeader header, final boolean presorted, final File outputFile) {
         try {
             final SAMTextWriter ret = this.createMd5File
-                    ? new SAMTextWriter(new Md5CalculatingOutputStream(new FileOutputStream(outputFile, false),
+                    ? new SAMTextWriter(new Md5CalculatingOutputStream(FileOperate.getOutputStream(outputFile, false),
                     new File(outputFile.getAbsolutePath() + ".md5")))
                     : new SAMTextWriter(outputFile);
             ret.setSortOrder(header.getSortOrder(), presorted);
@@ -389,7 +391,7 @@ public class SAMFileWriterFactory {
             else {
                 try {
                     final File indexFile = new File(outputFile.getAbsolutePath() + BAMIndex.BAMIndexSuffix) ;
-                    indexOS = new FileOutputStream(indexFile) ;
+                    indexOS = FileOperate.getOutputStream(indexFile) ;
                 }
                 catch (final IOException ioe) {
                     throw new RuntimeIOException("Error creating index file for: " + outputFile.getAbsolutePath()+ BAMIndex.BAMIndexSuffix);

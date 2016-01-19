@@ -14,8 +14,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
+
+import com.novelbio.base.fileOperate.FileOperate;
+import com.novelbio.base.fileOperate.PositionInputStream;
 
 public class BamFileIoUtils {
     private static final Log LOG = Log.getInstance(BamFileIoUtils.class);
@@ -68,9 +75,9 @@ public class BamFileIoUtils {
      * @param skipTerminator If true, the terminator block of the input file will not be written to the output stream
      */
     public static void blockCopyBamFile(final File inputFile, final OutputStream outputStream, final boolean skipHeader, final boolean skipTerminator) {
-        FileInputStream in = null;
+    	PositionInputStream in = null;
         try {
-            in = new FileInputStream(inputFile);
+            in = new PositionInputStream(FileOperate.getInputStream(inputFile));
 
             // a) It's good to check that the end of the file is valid and b) we need to know if there's a terminator block and not copy it if skipTerminator is true
             final BlockCompressedInputStream.FileTermination term = BlockCompressedInputStream.checkTermination(inputFile);
@@ -100,8 +107,8 @@ public class BamFileIoUtils {
             }
 
             // Copy remainder of input stream into output stream
-            final long currentPos = in.getChannel().position();
-            final long length = inputFile.length();
+            final long currentPos = in.getPos();
+            final long length = FileOperate.getFileSizeLong(inputFile);
             final long skipLast = ((term == BlockCompressedInputStream.FileTermination.HAS_TERMINATOR_BLOCK) && skipTerminator) ?
                     BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length : 0;
             final long bytesToWrite = length - skipLast - currentPos;
@@ -122,7 +129,7 @@ public class BamFileIoUtils {
      */
     public static void gatherWithBlockCopying(final List<File> bams, final File output, final boolean createIndex, final boolean createMd5) {
         try {
-            OutputStream out = new FileOutputStream(output);
+            OutputStream out = FileOperate.getOutputStream(output);
             if (createMd5) out = new Md5CalculatingOutputStream(out, new File(output.getAbsolutePath() + ".md5"));
             File indexFile = null;
             if (createIndex) {
@@ -144,11 +151,9 @@ public class BamFileIoUtils {
 
             // It is possible that the modified time on the index file is ever so slightly older than the original BAM file
             // and this makes ValidateSamFile unhappy.
-            if (createIndex && (output.lastModified() > indexFile.lastModified())) {
-                final boolean success = indexFile.setLastModified(System.currentTimeMillis());
-                if (!success) {
-                    System.err.print(String.format("Index file is older than BAM file for %s and unable to resolve this", output.getAbsolutePath()));
-                }
+            if (createIndex && (FileOperate.getTimeLastModify(output) > FileOperate.getTimeLastModify(indexFile))) {
+            	Path path = IOUtil.getPath(indexFile);
+            	Files.setLastModifiedTime(path, FileTime.fromMillis(System.currentTimeMillis()));	
             }
         } catch (final IOException ioe) {
             throw new RuntimeIOException(ioe);
@@ -156,7 +161,7 @@ public class BamFileIoUtils {
     }
 
     private static OutputStream buildOutputStream(final File outputFile, final boolean createMd5, final boolean createIndex) throws IOException {
-        OutputStream outputStream = new FileOutputStream(outputFile);
+        OutputStream outputStream = FileOperate.getOutputStream(outputFile);
         if (createMd5) {
             outputStream = new Md5CalculatingOutputStream(outputStream, new File(outputFile.getAbsolutePath() + ".md5"));
         }

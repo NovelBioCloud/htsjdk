@@ -6,8 +6,6 @@ import htsjdk.samtools.seekablestream.SeekableFileStream;
 import htsjdk.samtools.seekablestream.SeekableMemoryStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
 import htsjdk.samtools.util.IOUtil;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,9 +13,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 public class SamIndexesTest {
 
@@ -25,7 +29,7 @@ public class SamIndexesTest {
     public void testEmptyBai() throws IOException {
         final File baiFile = File.createTempFile("test", ".bai");
         baiFile.deleteOnExit();
-        final FileOutputStream fos = new FileOutputStream(baiFile);
+        final OutputStream fos = FileOperate.getOutputStream(baiFile);
         fos.write(SamIndexes.BAI.magic);
         fos.close();
 
@@ -111,7 +115,7 @@ public class SamIndexesTest {
 
         final File file = File.createTempFile("test", ".crai");
         file.deleteOnExit();
-        final FileOutputStream fos = new FileOutputStream(file);
+        final OutputStream fos = FileOperate.getOutputStream(file);
         final GZIPOutputStream gos = new GZIPOutputStream(fos);
         CRAIIndex.writeIndex(gos, index);
         gos.close();
@@ -171,7 +175,7 @@ public class SamIndexesTest {
 
         final File file = File.createTempFile("test", ".crai");
         file.deleteOnExit();
-        final FileOutputStream fos = new FileOutputStream(file);
+        final OutputStream fos = FileOperate.getOutputStream(file);
         final GZIPOutputStream gos = new GZIPOutputStream(fos);
         CRAIIndex.writeIndex(gos, index);
         gos.close();

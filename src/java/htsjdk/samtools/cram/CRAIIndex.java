@@ -6,6 +6,7 @@ import htsjdk.samtools.SAMSequenceDictionary;
 import htsjdk.samtools.cram.structure.Slice;
 import htsjdk.samtools.seekablestream.SeekableMemoryStream;
 import htsjdk.samtools.seekablestream.SeekableStream;
+import htsjdk.samtools.util.IOUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -121,7 +122,7 @@ public class CRAIIndex {
     }
 
     public static SeekableStream openCraiFileAsBaiStream(final File cramIndexFile, final SAMSequenceDictionary dictionary) throws IOException {
-        return openCraiFileAsBaiStream(new FileInputStream(cramIndexFile), dictionary);
+        return openCraiFileAsBaiStream(IOUtil.openFileForReading(cramIndexFile), dictionary);
     }
 
     public static SeekableStream openCraiFileAsBaiStream(final InputStream indexStream, final SAMSequenceDictionary dictionary) throws IOException, CRAIIndexException {

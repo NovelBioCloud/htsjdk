@@ -18,6 +18,7 @@
 
 package htsjdk.tribble.index;
 
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.tribble.Tribble;
 import htsjdk.tribble.TribbleException;
 import htsjdk.tribble.util.LittleEndianInputStream;
@@ -32,6 +33,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /**
  * <p/>
@@ -233,8 +236,8 @@ public abstract class AbstractIndex implements MutableIndex {
     public void finalizeIndex() {
         // these two functions must be called now because the file may be being written during on the fly indexing
         if (indexedFile != null) {
-            this.indexedFileSize = indexedFile.length();
-            this.indexedFileTS = indexedFile.lastModified();
+            this.indexedFileSize = FileOperate.getFileSizeLong(indexedFile);
+            this.indexedFileTS = FileOperate.getTimeLastModify(indexedFile);
         }
     }
 
@@ -344,9 +347,9 @@ public abstract class AbstractIndex implements MutableIndex {
 
     @Override
     public void writeBasedOnFeatureFile(final File featureFile) throws IOException {
-        if (!featureFile.isFile()) return;
+        if (!IOUtil.isFile(featureFile)) return;
         final LittleEndianOutputStream idxStream =
-                new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(Tribble.indexFile(featureFile))));
+                new LittleEndianOutputStream(new BufferedOutputStream(FileOperate.getOutputStream(Tribble.indexFile(featureFile))));
         write(idxStream);
         idxStream.close();
 

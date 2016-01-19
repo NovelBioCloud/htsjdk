@@ -59,6 +59,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Factory class for creating indexes.  It is the responsibility of this class to determine and create the
  * correct index type from the input file or stream.  Only LinearIndex and IntervalTreeIndex are supported
@@ -287,7 +289,7 @@ public class IndexFactory {
     public static void writeIndex(final Index idx, final File idxFile) throws IOException {
         LittleEndianOutputStream stream = null;
         try {
-            stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
+            stream = new LittleEndianOutputStream(new BufferedOutputStream(FileOperate.getOutputStream(idxFile)));
             idx.write(stream);
         }
         finally {
@@ -420,7 +422,7 @@ public class IndexFactory {
 
         private PositionalBufferedStream initStream(final File inputFile, final long skip) {
             try {
-                final FileInputStream fileStream = new FileInputStream(inputFile);
+                final InputStream fileStream = FileOperate.getInputStream(inputFile);
                 final InputStream is;
 
                 // if this looks like a block compressed file and it in fact is, we will use it

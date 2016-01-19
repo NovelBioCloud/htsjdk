@@ -69,6 +69,12 @@ import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import com.novelbio.base.PathDetail;
+import com.novelbio.base.StringOperate;
+import com.novelbio.base.fileOperate.FileHadoop;
+import com.novelbio.base.fileOperate.FileOperate;
+import com.novelbio.base.fileOperate.FileOperate.ExceptionFileError;
+
 /**
  * Miscellaneous stateless static IO-oriented methods.
  *  Also used for utility methods that wrap or aggregate functionality in Java IO.
@@ -219,15 +225,25 @@ public class IOUtil {
      */
     public static void deleteFiles(final File... files) {
         for (final File f : files) {
-            if (!f.delete()) {
-                System.err.println("Could not delete file " + f);
-            }
-        }
+        	Path path = getPath(f);
+        	 try {
+ 	            if (!Files.deleteIfExists(path)) {
+ 	                System.err.println("Could not delete file " + f);
+ 	            }
+             } catch (IOException e) {
+                 System.err.println("Could not delete file " + f);
+             }
+         }
     }
 
     public static void deleteFiles(final Iterable<File> files) {
         for (final File f : files) {
-            if (!f.delete()) {
+        	Path path = getPath(f);
+            try {
+	            if (!Files.deleteIfExists(path)) {
+	                System.err.println("Could not delete file " + f);
+	            }
+            } catch (IOException e) {
                 System.err.println("Could not delete file " + f);
             }
         }
@@ -240,7 +256,8 @@ public class IOUtil {
      * file, or a path that could be a regular output file.
      */
     public static boolean isRegularPath(final File file) {
-        return !file.exists() || file.isFile();
+    	Path path = getPath(file);
+    	return !Files.exists(path) || isFile(path);
     }
 
     /**
@@ -254,7 +271,8 @@ public class IOUtil {
         for (int i = 0; i < tmpDirs.length; ++i) {
             if (i == tmpDirs.length - 1 || tmpDirs[i].getUsableSpace() > minBytesFree) {
                 f = File.createTempFile(prefix, suffix, tmpDirs[i]);
-                f.deleteOnExit();
+//                f.deleteOnExit();
+                FileOperate.deleteOnExit(f);
                 break;
             }
         }
@@ -326,7 +344,7 @@ public class IOUtil {
      * @param file the file to check for readability
      */
     public static void assertFileIsReadable(final File file) {
-        assertFileIsReadable(file == null ? null : file.toPath());
+        assertFileIsReadable(file == null ? null : IOUtil.getPath(file));
     }
 
     /**
@@ -380,26 +398,28 @@ public class IOUtil {
     public static void assertFileIsWritable(final File file) {
         if (file == null) {
 			throw new IllegalArgumentException("Cannot check readability of null file.");
-		} else if (!file.exists()) {
+		}
+        Path path = getPath(file);
+        if (!Files.exists(path)) {
             // If the file doesn't exist, check that it's parent directory does and is writable
-            final File parent = file.getAbsoluteFile().getParentFile();
-            if (!parent.exists()) {
+            final Path parent = path.getParent();
+            if (!Files.exists(path.getParent())) {
                 throw new SAMException("Cannot write file: " + file.getAbsolutePath() + ". " +
                         "Neither file nor parent directory exist.");
             }
-            else if (!parent.isDirectory()) {
+            else if (!Files.isDirectory(parent)) {
                 throw new SAMException("Cannot write file: " + file.getAbsolutePath() + ". " +
                         "File does not exist and parent is not a directory.");
             }
-            else if (!parent.canWrite()) {
+            else if (!Files.isWritable(parent)) {
                 throw new SAMException("Cannot write file: " + file.getAbsolutePath() + ". " +
                         "File does not exist and parent directory is not writable..");
             }
         }
-        else if (file.isDirectory()) {
+        else if (Files.isDirectory(path)) {
             throw new SAMException("Cannot write file because it is a directory: " + file.getAbsolutePath());
         }
-        else if (!file.canWrite()) {
+        else if (!Files.isWritable(path)) {
             throw new SAMException("File exists but is not writable: " + file.getAbsolutePath());
         }
     }
@@ -425,13 +445,14 @@ public class IOUtil {
         if (dir == null) {
             throw new IllegalArgumentException("Cannot check readability of null file.");
         }
-        else if (!dir.exists()) {
+        Path path = getPath(dir);
+        if (!Files.exists(path)) {
             throw new SAMException("Directory does not exist: " + dir.getAbsolutePath());
         }
-        else if (!dir.isDirectory()) {
+        else if (!Files.isDirectory(path)) {
             throw new SAMException("Cannot write to directory because it is not a directory: " + dir.getAbsolutePath());
         }
-        else if (!dir.canWrite()) {
+        else if (!Files.isWritable(path)) {
             throw new SAMException("Directory exists but is not writable: " + dir.getAbsolutePath());
         }
     }
@@ -446,13 +467,14 @@ public class IOUtil {
         if (dir == null) {
             throw new IllegalArgumentException("Cannot check readability of null file.");
         }
-        else if (!dir.exists()) {
+        Path path = getPath(dir);
+        if (!Files.exists(path)) {
             throw new SAMException("Directory does not exist: " + dir.getAbsolutePath());
         }
-        else if (!dir.isDirectory()) {
+        else if (!Files.isDirectory(path)) {
             throw new SAMException("Cannot read from directory because it is not a directory: " + dir.getAbsolutePath());
         }
-        else if (!dir.canRead()) {
+        else if (!Files.isReadable(path)) {
             throw new SAMException("Directory exists but is not readable: " + dir.getAbsolutePath());
         }
     }
@@ -462,11 +484,11 @@ public class IOUtil {
      */
     public static void assertFilesEqual(final File f1, final File f2) {
         try {
-            if (f1.length() != f2.length()) {
+            if (FileOperate.getFileSizeLong(f1) != FileOperate.getFileSizeLong(f2)) {
                 throw new SAMException("Files " + f1 + " and " + f2 + " are different lengths.");
             }
-            final FileInputStream s1 = new FileInputStream(f1);
-            final FileInputStream s2 = new FileInputStream(f2);
+            final InputStream s1 = FileOperate.getInputStream(f1);
+            final InputStream s2 = FileOperate.getInputStream(f2);
             final byte[] buf1 = new byte[1024 * 1024];
             final byte[] buf2 = new byte[1024 * 1024];
             int len1;
@@ -491,7 +513,7 @@ public class IOUtil {
      * Checks that a file is of non-zero length
      */
     public static void assertFileSizeNonZero(final File file) {
-        if (file.length() == 0) {
+        if (FileOperate.getFileSizeLong(file) == 0) {
             throw new SAMException(file.getAbsolutePath() + " has length 0");
         }
     }
@@ -536,7 +558,7 @@ public class IOUtil {
      * @return the input stream to read from
      */
     public static InputStream openGzipFileForReading(final File file) {
-        return openGzipFileForReading(file.toPath());
+        return openGzipFileForReading(IOUtil.getPath(file));
     }
 
     /**
@@ -580,7 +602,7 @@ public class IOUtil {
                 return openGzipFileForWriting(file, append);
             }
             else {
-                return new FileOutputStream(file, append);
+                return FileOperate.getOutputStream(file, append);
             }
         }
         catch (IOException ioe) {
@@ -631,11 +653,11 @@ public class IOUtil {
 
         try {
             if (Defaults.BUFFER_SIZE > 0) {
-            return new CustomGzipOutputStream(new FileOutputStream(file, append),
+            return new CustomGzipOutputStream(FileOperate.getOutputStream(file, append),
                                               Defaults.BUFFER_SIZE,
                                               compressionLevel);
             } else {
-                return new CustomGzipOutputStream(new FileOutputStream(file, append), compressionLevel);
+                return new CustomGzipOutputStream(FileOperate.getOutputStream(file, append), compressionLevel);
             }
         }
         catch (IOException ioe) {
@@ -671,8 +693,8 @@ public class IOUtil {
      */
     public static void copyFile(final File input, final File output) {
         try {
-            final InputStream is = new FileInputStream(input);
-            final OutputStream os = new FileOutputStream(output);
+            final InputStream is = FileOperate.getInputStream(input);
+            final OutputStream os = FileOperate.getOutputStream(output);
             copyStream(is, os);
             os.close();
             is.close();
@@ -693,6 +715,7 @@ public class IOUtil {
     }
 
     public static File[] getFilesMatchingRegexp(final File directory, final Pattern regexp) {
+    	File directNew = FileOperate.getFile(directory.getAbsolutePath());
         return directory.listFiles( new FilenameFilter() {
             public boolean accept(final File dir, final String name) {
                 return regexp.matcher(name).matches();
@@ -704,37 +727,33 @@ public class IOUtil {
      * Delete the given file or directory.  If a directory, all enclosing files and subdirs are also deleted.
      */
     public static boolean deleteDirectoryTree(final File fileOrDirectory) {
-        boolean success = true;
-
-        if (fileOrDirectory.isDirectory()) {
-            for (final File child : fileOrDirectory.listFiles()) {
-                success = success && deleteDirectoryTree(child);
-            }
-        }
-
-        success = success && fileOrDirectory.delete();
-        return success;
+//        boolean success = true;
+//
+//        if (fileOrDirectory.isDirectory()) {
+//            for (final File child : fileOrDirectory.listFiles()) {
+//                success = success && deleteDirectoryTree(child);
+//            }
+//        }
+//
+//        success = success && fileOrDirectory.delete();
+//        return success;
+    	FileOperate.DeleteFileFolder(getPath(fileOrDirectory));
+    	return true;
     }
 
     /**
      * Returns the size (in bytes) of the file or directory and all it's children.
      */
-    public static long sizeOfTree(final File fileOrDirectory) {
-        long total = fileOrDirectory.length();
-        if (fileOrDirectory.isDirectory()) {
-            for (final File f : fileOrDirectory.listFiles()) {
-                total += sizeOfTree(f);
-            }
-        }
-
-        return total;
+    public static long sizeOfTree(final File fileOrDirectoryRaw) {
+    	return	FileOperate.getFileSizeLong(fileOrDirectoryRaw);
     }
 
     /**
      *
      * Copies a directory tree (all subdirectories and files) recursively to a destination
      */
-    public static void copyDirectoryTree(final File fileOrDirectory, final File destination) {
+    public static void copyDirectoryTree(final File fileOrDirectoryRaw, final File destination) {
+    	File fileOrDirectory = FileOperate.getFile(fileOrDirectoryRaw.getAbsolutePath());
         if (fileOrDirectory.isDirectory()) {
             destination.mkdir();
             for(final File f : fileOrDirectory.listFiles()) {
@@ -761,10 +780,13 @@ public class IOUtil {
     public static File createTempDir(final String prefix, final String suffix) {
         try {
             final File tmp = File.createTempFile(prefix, suffix);
-            if (!tmp.delete()) {
+            final Path tmpPath = getPath(tmp);
+            if (!Files.deleteIfExists(tmpPath)) {
                 throw new SAMException("Could not delete temporary file " + tmp);
             }
-            if (!tmp.mkdir()) {
+            try {
+            	Files.createDirectories(tmpPath);
+            } catch (Exception e) {
                 throw new SAMException("Could not create temporary directory " + tmp);
             }
             return tmp;
@@ -871,7 +893,12 @@ public class IOUtil {
 
     /** Returns all of the untrimmed lines in the provided file. */
     public static List<String> slurpLines(final File file) throws FileNotFoundException {
-        return slurpLines(new FileInputStream(file));
+    	try {
+    		return slurpLines(FileOperate.getInputStream(file));
+        } catch (Exception e) {
+        	throw new FileNotFoundException("cannot find file " + file);
+        }
+        
     }
 
     public static List<String> slurpLines(final InputStream is) throws FileNotFoundException {
@@ -881,7 +908,12 @@ public class IOUtil {
 
     /** Convenience overload for {@link #slurp(java.io.InputStream, java.nio.charset.Charset)} using the default charset {@link java.nio.charset.Charset#defaultCharset()}. */
     public static String slurp(final File file) throws FileNotFoundException {
-        return slurp(new FileInputStream(file));
+    	try {
+    		return slurp(FileOperate.getInputStream(file));
+        } catch (Exception e) {
+	       throw new FileNotFoundException("cannot find file " + file);
+        }
+        
     }
 
     /** Convenience overload for {@link #slurp(java.io.InputStream, java.nio.charset.Charset)} using the default charset {@link java.nio.charset.Charset#defaultCharset()}. */
@@ -960,18 +992,20 @@ public class IOUtil {
 	 * @return
 	 */
 	public static Path getPath(String fileName) {
-		if (fileName==null || fileName.trim().equals("")) return null;
+		if (StringOperate.isRealNull(fileName)) return null;
+		if (fileName.startsWith(PathDetail.getHdpHdfsHeadSymbol())) {
+			fileName = fileName.replaceFirst(PathDetail.getHdpHdfsHeadSymbol(), "hdfs:");
+        }
 		try {
-			if (fileName.startsWith("hdfs:/")) {
+			if (fileName.startsWith( "hdfs:")) {
 				URI uri = new URI(fileName);
 				return Paths.get(uri);
 			} else {
 				File file = new File(fileName);
 				return file.toPath();
 			}
-		} catch (URISyntaxException e) {
-			//TODO I don't know which exception should throw
-			throw new RuntimeException("cannot get path from " + fileName, e);
+		} catch (Exception e) {
+			throw new ExceptionFileError("cannot get path from " + fileName);
         }
 	}
 
@@ -998,7 +1032,27 @@ public class IOUtil {
 		if (file == null) return null;
 		return getPath(file.getPath());
 	}
-
+	
+	/**
+	 * use this to replace {@link File#isFile()}, because with hdfs:/ path, the method is invalid
+	 * @param file
+	 * @return
+	 */
+	public static boolean isFile(File file) {
+		if (file == null) return false;
+		Path path = getPath(file);
+		return Files.exists(path) && !Files.isDirectory(path);
+	}
+	
+	/**
+	 * use this to replace {@link File#isFile()}
+	 * @param file
+	 * @return
+	 */
+	public static boolean isFile(Path path) {
+		if (path == null) return false;
+		return Files.exists(path) && !Files.isDirectory(path);
+	}
 }
 
 

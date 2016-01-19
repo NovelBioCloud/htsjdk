@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Holds info about a mate pair for use when processing a coordinate sorted file.  When one read of a pair is encountered,
  * the caller should add a record to this map.  When the other read of a pair is encountered, the record should be removed.
@@ -71,7 +73,7 @@ public class CoordinateSortedPairInfoMap<KEY, REC> implements Iterable<Map.Entry
 
     public CoordinateSortedPairInfoMap(final int maxOpenFiles, final Codec<KEY, REC> elementCodec) {
         this.elementCodec = elementCodec;
-        workDir.deleteOnExit();
+        FileOperate.deleteOnExit(workDir);
         outputStreams = new FileAppendStreamLRUCache(maxOpenFiles);
     }
 
@@ -96,7 +98,7 @@ public class CoordinateSortedPairInfoMap<KEY, REC> implements Iterable<Map.Entry
             // Spill map in RAM to disk
             if (mapInRam != null) {
                 final File spillFile = makeFileForSequence(sequenceIndexOfMapInRam);
-                if (spillFile.exists()) throw new IllegalStateException(spillFile + " should not exist.");
+                if (FileOperate.isFileFolderExist(spillFile)) throw new IllegalStateException(spillFile + " should not exist.");
                 if (!mapInRam.isEmpty()) {
                     // Do not create file or entry in sizeOfMapOnDisk if there is nothing to write.
                     final OutputStream os = getOutputStreamForSequence(sequenceIndexOfMapInRam);
@@ -119,12 +121,12 @@ public class CoordinateSortedPairInfoMap<KEY, REC> implements Iterable<Map.Entry
                 outputStreams.remove(mapOnDisk).close();
             }
             final Integer numRecords = sizeOfMapOnDisk.remove(sequenceIndex);
-            if (mapOnDisk.exists()) {
+            if (FileOperate.isFileFolderExist(mapOnDisk)) {
                 if (numRecords == null)
                     throw new IllegalStateException("null numRecords for " + mapOnDisk);
-                FileInputStream is = null;
+                InputStream is = null;
                 try {
-                    is = new FileInputStream(mapOnDisk);
+                    is = FileOperate.getInputStream(mapOnDisk);
                     elementCodec.setInputStream(is);
                     for (int i = 0; i < numRecords; ++i) {
                         final Map.Entry<KEY, REC> keyAndRecord = elementCodec.decode();
@@ -172,7 +174,7 @@ public class CoordinateSortedPairInfoMap<KEY, REC> implements Iterable<Map.Entry
 
     private File makeFileForSequence(final int index) {
         final File file = new File(workDir, index + ".tmp");
-        file.deleteOnExit();
+        FileOperate.deleteOnExit(file);
         return file;
     }
 

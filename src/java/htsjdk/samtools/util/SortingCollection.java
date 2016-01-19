@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Collection to which many records can be added.  After all records are added, the collection can be
  * iterated, and the records will be returned in order defined by the comparator.  Records may be spilled
@@ -219,7 +221,7 @@ public class SortingCollection<T> implements Iterable<T> {
             final File f = newTempFile();
             OutputStream os = null;
             try {
-                os = tempStreamFactory.wrapTempOutputStream(new FileOutputStream(f), Defaults.BUFFER_SIZE);
+                os = tempStreamFactory.wrapTempOutputStream(FileOperate.getOutputStream(f), Defaults.BUFFER_SIZE);
                 this.codec.setOutputStream(os);
                 for (int i = 0; i < this.numRecordsInRam; ++i) {
                     this.codec.encode(ramRecords[i]);
@@ -446,19 +448,19 @@ public class SortingCollection<T> implements Iterable<T> {
      */
     class FileRecordIterator implements CloseableIterator<T> {
         private final File file;
-        private final FileInputStream is;
+        private final InputStream is;
         private final Codec<T> codec;
         private T currentRecord = null;
 
         FileRecordIterator(final File file) {
             this.file = file;
             try {
-                this.is = new FileInputStream(file);
+                this.is = FileOperate.getInputStream(file);
                 this.codec = SortingCollection.this.codec.clone();
                 this.codec.setInputStream(tempStreamFactory.wrapTempInputStream(this.is, Defaults.BUFFER_SIZE));
                 advance();
             }
-            catch (FileNotFoundException e) {
+            catch (IOException e) {
                 throw new RuntimeIOException(e);
             }
         }

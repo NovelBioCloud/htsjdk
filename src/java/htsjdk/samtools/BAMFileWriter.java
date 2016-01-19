@@ -25,6 +25,7 @@ package htsjdk.samtools;
 
 import htsjdk.samtools.util.BinaryCodec;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.RuntimeIOException;
 
 import java.io.DataOutputStream;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Concrete implementation of SAMFileWriter for writing gzipped BAM files.
@@ -96,13 +99,13 @@ class BAMFileWriter extends SAMFileWriterImpl {
         try {
             final String indexFileBase = path.endsWith(BamFileIoUtils.BAM_FILE_EXTENSION) ?
                     path.substring(0, path.lastIndexOf(".")) : path;
-            final File indexFile = new File(indexFileBase + BAMIndex.BAMIndexSuffix);
-            if (indexFile.exists()) {
-                if (!indexFile.canWrite()) {
+            final Path indexFile = IOUtil.getPath(indexFileBase + BAMIndex.BAMIndexSuffix);
+            if (Files.exists(indexFile)) {
+                if (!Files.isReadable(indexFile)) {
                     throw new SAMException("Not creating BAM index since unable to write index file " + indexFile);
                 }
             }
-            return new BAMIndexer(indexFile, getFileHeader());
+            return new BAMIndexer(Files.newOutputStream(indexFile), getFileHeader());
         } catch (Exception e) {
             throw new SAMException("Not creating BAM index", e);
         }

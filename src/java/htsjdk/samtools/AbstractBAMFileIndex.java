@@ -40,6 +40,9 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 
+import com.novelbio.base.fileOperate.RandomFileInt;
+import com.novelbio.base.fileOperate.RandomFileInt.RandomFileFactory;
+
 /**
  * Provides basic, generic capabilities to be used reading BAM index files.  Users can
  * subclass this class to create new BAM index functionality for adding querying facilities,
@@ -77,8 +80,8 @@ public abstract class AbstractBAMFileIndex implements BAMIndex {
 
     protected AbstractBAMFileIndex(final File file, final SAMSequenceDictionary dictionary, final boolean useMemoryMapping) {
         mBamDictionary = dictionary;
-        mIndexBuffer = (useMemoryMapping ? new MemoryMappedFileBuffer(file) : new RandomAccessFileBuffer(file));
-
+//        mIndexBuffer = (useMemoryMapping ? new MemoryMappedFileBuffer(file) : new RandomAccessFileBuffer(file));
+        mIndexBuffer = new RandomAccessFileBuffer(file);
         verifyBAMMagicNumber(file.getName());
 
         sequenceIndexes = new int[readInteger() + 1];
@@ -538,7 +541,7 @@ public abstract class AbstractBAMFileIndex implements BAMIndex {
         private static final int PAGE_MASK = ~PAGE_OFFSET_MASK;
         private static final int INVALID_PAGE = 1;
         private final File mFile;
-        private RandomAccessFile mRandomAccessFile;
+        private RandomFileInt mRandomAccessFile;
         private final int mFileLength;
         private int mFilePointer = 0;
         private int mCurrentPage = INVALID_PAGE;
@@ -547,7 +550,7 @@ public abstract class AbstractBAMFileIndex implements BAMIndex {
         RandomAccessFileBuffer(final File file) {
             mFile = file;
             try {
-                mRandomAccessFile = new RandomAccessFile(file, "r");
+                mRandomAccessFile = RandomFileFactory.createInstance(file);
                 final long fileLength = mRandomAccessFile.length();
                 if (fileLength > Integer.MAX_VALUE) {
                     throw new RuntimeIOException("BAM index file " + mFile + " is too large: " + fileLength);

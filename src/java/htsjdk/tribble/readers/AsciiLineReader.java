@@ -27,6 +27,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * A simple class that provides {@link #readLine()} functionality around a PositionalBufferedStream
  *
@@ -163,7 +165,7 @@ public class AsciiLineReader implements LineReader, LocationAware {
                 longLineBufferedReader.close();
             }
             
-            final PositionalBufferedStream pbs = new PositionalBufferedStream(new FileInputStream(testFile));
+            final PositionalBufferedStream pbs = new PositionalBufferedStream(FileOperate.getInputStream(testFile));
             final LineReader reader = new AsciiLineReader(pbs);
             t0 = System.currentTimeMillis();
             lineCount = 0;

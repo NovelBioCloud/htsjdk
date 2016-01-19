@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.TreeSet;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Factory class for creating SAMRecords for testing purposes. Various methods can be called
  * to add new SAM records (or pairs of records) to a list which can then be returned at
@@ -563,7 +565,7 @@ public class SAMRecordSetBuilder implements Iterable<SAMRecord> {
         w.close();
 
         final SamReader reader = SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT).open(tempFile);
-        tempFile.deleteOnExit();
+        FileOperate.deleteOnExit(tempFile);
 
         return reader;
     }

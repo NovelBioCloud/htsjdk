@@ -39,10 +39,12 @@ import htsjdk.samtools.util.IntervalList;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /**
  * Tiny class for automatically loading a SAMSequenceDictionary given a file
@@ -65,11 +67,11 @@ public class SAMSequenceDictionaryExtractor {
             SAMSequenceDictionary extractDictionary(final File dictionary) {
                 BufferedLineReader bufferedLineReader = null;
                 try {
-                    bufferedLineReader = new BufferedLineReader(new FileInputStream(dictionary));
+                    bufferedLineReader = new BufferedLineReader(FileOperate.getInputStream(dictionary));
                     final SAMTextHeaderCodec codec = new SAMTextHeaderCodec();
                     final SAMFileHeader header = codec.decode(bufferedLineReader, dictionary.toString());
                     return header.getSequenceDictionary();
-                } catch (final FileNotFoundException e) {
+                } catch (final IOException e) {
                     throw new SAMException("Could not open sequence dictionary file: " + dictionary, e);
                 } finally {
                     CloserUtil.close(bufferedLineReader);

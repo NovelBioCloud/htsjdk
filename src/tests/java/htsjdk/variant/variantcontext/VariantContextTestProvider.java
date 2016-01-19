@@ -50,6 +50,8 @@ import htsjdk.variant.vcf.VCFInfoHeaderLine;
 
 import org.testng.Assert;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -756,11 +758,11 @@ public class VariantContextTestProvider {
     }
 
     public static VariantContextContainer readAllVCs(final File input, final BCF2Codec codec) throws IOException {
-        PositionalBufferedStream headerPbs = new PositionalBufferedStream(new FileInputStream(input));
+        PositionalBufferedStream headerPbs = new PositionalBufferedStream(FileOperate.getInputStream(input));
         FeatureCodecHeader header = codec.readHeader(headerPbs);
         headerPbs.close();
 
-        final PositionalBufferedStream pbs = new PositionalBufferedStream(new FileInputStream(input));
+        final PositionalBufferedStream pbs = new PositionalBufferedStream(FileOperate.getInputStream(input));
         pbs.skip(header.getHeaderEnd());
 
         final VCFHeader vcfHeader = (VCFHeader)header.getHeaderValue();
@@ -782,19 +784,25 @@ public class VariantContextTestProvider {
     }
 
     public static VariantContextContainer readAllVCs(final File input, final VCFCodec codec) throws FileNotFoundException {
-        final LineIterator lineIterator = new LineIteratorImpl(LineReaderUtil.fromBufferedStream(new BufferedInputStream(new FileInputStream(input))));
-        final VCFHeader vcfHeader = (VCFHeader) codec.readActualHeader(lineIterator);
-        return new VariantContextTestProvider.VariantContextContainer(vcfHeader, new VariantContextTestProvider.VCIterable<LineIterator>(codec, vcfHeader) {
-            @Override
-            public boolean hasNext() {
-                return lineIterator.hasNext();
-            }
+    
+    	try {
+        	final LineIterator lineIterator = new LineIteratorImpl(LineReaderUtil.fromBufferedStream(new BufferedInputStream(FileOperate.getInputStream(input))));
+            final VCFHeader vcfHeader = (VCFHeader) codec.readActualHeader(lineIterator);
+            return new VariantContextTestProvider.VariantContextContainer(vcfHeader, new VariantContextTestProvider.VCIterable<LineIterator>(codec, vcfHeader) {
+                @Override
+                public boolean hasNext() {
+                    return lineIterator.hasNext();
+                }
 
-            @Override
-            public LineIterator nextSource() {
-                return lineIterator;
-            }
-        });
+                @Override
+                public LineIterator nextSource() {
+                    return lineIterator;
+                }
+            });
+        } catch (Exception e) {
+        	throw new FileNotFoundException("cannot find file " + input);
+        }
+
     }
     
     public static void assertVCFandBCFFilesAreTheSame(final File vcfFile, final File bcfFile) throws IOException {

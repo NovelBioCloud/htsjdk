@@ -38,8 +38,11 @@ import htsjdk.tribble.index.tabix.TabixIndexCreator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.EnumSet;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /**
  * Factory methods to create VariantContext writers
@@ -274,8 +277,8 @@ public class VariantContextWriterFactory {
      */
     protected static OutputStream openOutputStream(final File location) {
         try {
-            return IOUtil.maybeBufferOutputStream(new FileOutputStream(location));
-        } catch (final FileNotFoundException e) {
+            return IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(location));
+        } catch (final IOException e) {
             throw new RuntimeIOException(location + ": Unable to create VCF writer", e);
         }
     }

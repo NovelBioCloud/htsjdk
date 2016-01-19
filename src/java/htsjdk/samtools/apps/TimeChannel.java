@@ -27,12 +27,14 @@ import java.io.FileInputStream;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * @author alecw@broadinstitute.org
  */
 public class TimeChannel {
     public static void main(String[] args) throws Exception {
-        long fileSize = new File(args[0]).length();
+        long fileSize = FileOperate.getFileSizeLong(new File(args[0]));
         FileInputStream in = new FileInputStream(args[0]);
         FileChannel channel = in.getChannel();
         byte[] buf = new byte[64 * 1024];

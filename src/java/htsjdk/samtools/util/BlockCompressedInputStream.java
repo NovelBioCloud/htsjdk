@@ -41,6 +41,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /*
  * Utility class for reading BGZF block compressed files.  The caller can treat this file like any other InputStream.
  * It probably is not necessary to wrap this stream in a buffering stream, because there is internal buffering.
@@ -456,7 +458,7 @@ public class BlockCompressedInputStream extends InputStream implements LocationA
 
     public static FileTermination checkTermination(final File file)
         throws IOException {
-        final long fileSize = file.length();
+        final long fileSize = FileOperate.getFileSizeLong(file);
         if (fileSize < BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length) {
             return FileTermination.DEFECTIVE;
         }

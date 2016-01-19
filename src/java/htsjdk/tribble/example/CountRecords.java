@@ -23,6 +23,7 @@
  */
 package htsjdk.tribble.example;
 
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.RuntimeIOException;
 import htsjdk.tribble.AbstractFeatureReader;
 import htsjdk.tribble.Feature;
@@ -39,7 +40,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Iterator;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /**
  * An example of how to index a feature file, and then count all the records in the file.
@@ -143,9 +148,9 @@ public class CountRecords {
 
         // our index instance;
         Index index = null;
-
+        Path path = IOUtil.getPath(indexFile);
         // can we read the index file
-        if (indexFile.canRead()) {
+        if (Files.isReadable(path)) {
             System.err.println("Loading index from disk for index file -> " + indexFile);
             index = IndexFactory.loadIndex(indexFile.getAbsolutePath());
         // else we want to make the index, and write it to disk if possible
@@ -169,7 +174,7 @@ public class CountRecords {
             Index index = IndexFactory.createLinearIndex(featureFile, codec);
 
             // try to write it to disk
-            LittleEndianOutputStream stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(indexFile)));
+            LittleEndianOutputStream stream = new LittleEndianOutputStream(new BufferedOutputStream(FileOperate.getOutputStream(indexFile)));
             		
             index.write(stream);
             stream.close();

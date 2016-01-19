@@ -56,6 +56,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 
 public abstract class AbstractVCFCodec extends AsciiFeatureCodec<VariantContext> implements NameAwareCodec {
     public final static int MAX_ALLELE_SIZE_BEFORE_WARNING = (int)Math.pow(2, 20);
@@ -615,9 +617,9 @@ public abstract class AbstractVCFCodec extends AsciiFeatureCodec<VariantContext>
 
     public final static boolean canDecodeFile(final String potentialInput, final String MAGIC_HEADER_LINE) {
         try {
-            return isVCFStream(new FileInputStream(potentialInput), MAGIC_HEADER_LINE) ||
-                    isVCFStream(new GZIPInputStream(new FileInputStream(potentialInput)), MAGIC_HEADER_LINE) ||
-                    isVCFStream(new BlockCompressedInputStream(new FileInputStream(potentialInput)), MAGIC_HEADER_LINE);
+            return isVCFStream(FileOperate.getInputStream(potentialInput), MAGIC_HEADER_LINE) ||
+                    isVCFStream(new GZIPInputStream(FileOperate.getInputStream(potentialInput)), MAGIC_HEADER_LINE) ||
+                    isVCFStream(new BlockCompressedInputStream(FileOperate.getInputStream(potentialInput)), MAGIC_HEADER_LINE);
         } catch ( FileNotFoundException e ) {
             return false;
         } catch ( IOException e ) {

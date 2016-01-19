@@ -24,6 +24,8 @@
 
 package htsjdk.samtools.reference;
 
+import htsjdk.samtools.util.IOUtil;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
@@ -79,7 +81,7 @@ public class ReferenceSequenceFileFactory {
      * @param preferIndexed if true attempt to return an indexed reader that supports non-linear traversal, else return the non-indexed reader
      */
     public static ReferenceSequenceFile getReferenceSequenceFile(final File file, final boolean truncateNamesAtWhitespace, final boolean preferIndexed) {
-        return getReferenceSequenceFile(file.toPath(), truncateNamesAtWhitespace, preferIndexed);
+        return getReferenceSequenceFile(IOUtil.getPath(file), truncateNamesAtWhitespace, preferIndexed);
     }
 
     /**

@@ -33,8 +33,11 @@ import htsjdk.tribble.readers.LineIteratorImpl;
 import htsjdk.tribble.readers.LineReaderUtil;
 import htsjdk.variant.VariantBaseTest;
 import htsjdk.variant.variantcontext.VariantContext;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -114,7 +117,7 @@ public class VCFHeaderUnitTest extends VariantBaseTest {
     public void testVCFHeaderSampleRenamingMultiSampleVCF() throws Exception {
         final VCFCodec codec = new VCFCodec();
         codec.setRemappedSampleName("FOOSAMPLE");
-        final AsciiLineReaderIterator vcfIterator = new AsciiLineReaderIterator(new AsciiLineReader(new FileInputStream(variantTestDataRoot + "ex2.vcf")));
+        final AsciiLineReaderIterator vcfIterator = new AsciiLineReaderIterator(new AsciiLineReader(FileOperate.getInputStream(variantTestDataRoot + "ex2.vcf")));
         final VCFHeader header = (VCFHeader) codec.readHeader(vcfIterator).getHeaderValue();
     }
 
@@ -122,7 +125,7 @@ public class VCFHeaderUnitTest extends VariantBaseTest {
     public void testVCFHeaderSampleRenamingSitesOnlyVCF() throws Exception {
         final VCFCodec codec = new VCFCodec();
         codec.setRemappedSampleName("FOOSAMPLE");
-        final AsciiLineReaderIterator vcfIterator = new AsciiLineReaderIterator(new AsciiLineReader(new FileInputStream(variantTestDataRoot + "dbsnp_135.b37.1000.vcf")));
+        final AsciiLineReaderIterator vcfIterator = new AsciiLineReaderIterator(new AsciiLineReader(FileOperate.getInputStream(variantTestDataRoot + "dbsnp_135.b37.1000.vcf")));
         final VCFHeader header = (VCFHeader) codec.readHeader(vcfIterator).getHeaderValue();
     }
 
@@ -311,8 +314,8 @@ public class VCFHeaderUnitTest extends VariantBaseTest {
         }
         InputStream is;
         try {
-            is = new FileInputStream(file);
-        } catch (FileNotFoundException e) {
+            is = FileOperate.getInputStream(file);
+        } catch (IOException e) {
             throw new RuntimeException("Unable to open file " + file);
         }
         byte[] buffer = new byte[8192];

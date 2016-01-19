@@ -36,6 +36,8 @@ import java.io.SyncFailedException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Encapsulates file representation of various primitive data types.  Forces little-endian disk representation.
  * Note that this class is currently not very efficient.  There are plans to increase the size of the ByteBuffer,
@@ -101,13 +103,13 @@ public class BinaryCodec implements Closeable {
         try {
             this.isWriting = writing;
             if (this.isWriting) {
-                this.outputStream = IOUtil.maybeBufferOutputStream(new FileOutputStream(file));
+                this.outputStream = IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(file));
                 this.outputFileName = file.getName();
             } else {
-                this.inputStream = IOUtil.maybeBufferInputStream(new FileInputStream(file));
+                this.inputStream = IOUtil.maybeBufferInputStream(FileOperate.getInputStream(file));
                 this.inputFileName = file.getName();
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeIOException("File not found: " + file, e);
         }
     }

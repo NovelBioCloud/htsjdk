@@ -4,13 +4,17 @@ import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.cram.common.CramVersions;
 import htsjdk.samtools.cram.structure.CramHeader;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /**
  * Created by vadim on 25/08/2015.
@@ -23,7 +27,7 @@ public class CramIOTest {
         final CramHeader cramHeader = new CramHeader(CramVersions.CRAM_v2_1, id, new SAMFileHeader());
         final File file = File.createTempFile("test", ".cram");
         file.deleteOnExit();
-        final FileOutputStream fos = new FileOutputStream(file);
+        final OutputStream fos = FileOperate.getOutputStream(file);
         CramIO.writeCramHeader(cramHeader, fos);
         CramIO.issueEOF(cramHeader.getVersion(), fos);
         fos.close();
@@ -39,7 +43,7 @@ public class CramIOTest {
         final CramHeader cramHeader = new CramHeader(CramVersions.CRAM_v3, id, new SAMFileHeader());
         final File file = File.createTempFile("test", ".cram");
         file.deleteOnExit();
-        final FileOutputStream fos = new FileOutputStream(file);
+        final OutputStream fos = FileOperate.getOutputStream(file);
         CramIO.writeCramHeader(cramHeader, fos);
         CramIO.issueEOF(cramHeader.getVersion(), fos);
         fos.close();
@@ -56,7 +60,7 @@ public class CramIOTest {
         Assert.assertTrue(cramHeader.getSamFileHeader().getSequenceDictionary().isEmpty());
         final File file = File.createTempFile("test", ".cram");
         file.deleteOnExit();
-        final FileOutputStream fos = new FileOutputStream(file);
+        final OutputStream fos = FileOperate.getOutputStream(file);
         CramIO.writeCramHeader(cramHeader, fos);
         CramIO.issueEOF(cramHeader.getVersion(), fos);
         fos.close();

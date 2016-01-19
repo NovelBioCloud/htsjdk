@@ -23,10 +23,13 @@
  */
 package htsjdk.tribble.example;
 
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.tribble.index.Index;
 import htsjdk.tribble.index.IndexFactory;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Check with two index files are equal
@@ -66,7 +69,8 @@ public class IndicesAreEqual {
     public static Index loadIndex(String filename) {
         //System.err.println("Loading index from disk for index file -> " + filename);
         File file = new File(filename);
-        if (file.canRead()) {
+        Path path = IOUtil.getPath(file);
+        if (Files.isReadable(path)) {
             return IndexFactory.loadIndex(file.getAbsolutePath());
         } else {
             printUsage();

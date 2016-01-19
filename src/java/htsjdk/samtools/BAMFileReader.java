@@ -41,6 +41,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Class for reading and querying BAM files.
  */
@@ -81,7 +83,7 @@ class BAMFileReader extends SamReader.ReaderImplementation {
     /**
      * Use the traditional memory-mapped implementation for BAM file indexes rather than regular I/O.
      */
-    private boolean mEnableIndexMemoryMapping = true;
+    private boolean mEnableIndexMemoryMapping = false;
 
     /**
      * Add information about the origin (reader and position) to SAM records.
@@ -123,7 +125,7 @@ class BAMFileReader extends SamReader.ReaderImplementation {
                   final SAMRecordFactory factory)
         throws IOException {
         this(new BlockCompressedInputStream(file), indexFile!=null ? indexFile : SamFiles.findIndex(file), eagerDecode, file.getAbsolutePath(), validationStringency, factory);
-        if (mIndexFile != null && mIndexFile.lastModified() < file.lastModified()) {
+        if (mIndexFile != null && FileOperate.getTimeLastModify(mIndexFile) < FileOperate.getTimeLastModify(file)) {
             System.err.println("WARNING: BAM index file " + mIndexFile.getAbsolutePath() +
                     " is older than BAM " + file.getAbsolutePath());
         }

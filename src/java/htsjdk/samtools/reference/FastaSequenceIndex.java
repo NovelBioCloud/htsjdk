@@ -53,7 +53,7 @@ public class FastaSequenceIndex implements Iterable<FastaSequenceIndexEntry> {
      * @throws FileNotFoundException if the index file cannot be found.
      */
     public FastaSequenceIndex( File indexFile ) {
-        this(indexFile == null ? null : indexFile.toPath());
+        this(indexFile == null ? null : IOUtil.getPath(indexFile));
     }
 
     /**

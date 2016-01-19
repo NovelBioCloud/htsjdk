@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * @author jrobinso
  */
@@ -85,7 +87,7 @@ public class ParsingUtils {
             inputStream = getURLHelper(new URL(path)).openInputStream();
         } else {
             File file = new File(path);
-            inputStream = new FileInputStream(file);
+            inputStream = FileOperate.getInputStream(file);
         }
 
         return inputStream;
@@ -401,7 +403,7 @@ public class ParsingUtils {
             URLHelper helper = getURLHelper(url);
             return helper.exists();
         } else {
-            return (new File(resource)).exists();
+            return FileOperate.isFileFolderExist(resource);
         }
     }
 

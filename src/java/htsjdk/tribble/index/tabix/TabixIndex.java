@@ -30,6 +30,7 @@ import htsjdk.samtools.LinearIndex;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
 import htsjdk.samtools.util.CloserUtil;
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.StringUtil;
 import htsjdk.tribble.TribbleException;
 import htsjdk.tribble.index.Block;
@@ -218,7 +219,7 @@ public class TabixIndex implements Index {
      */
     @Override
     public void writeBasedOnFeatureFile(final File featureFile) throws IOException {
-        if (!featureFile.isFile()) return;
+        if (!IOUtil.isFile(featureFile)) return;
         write(new File(featureFile.getAbsolutePath() + TabixUtils.STANDARD_INDEX_EXTENSION));
     }
 

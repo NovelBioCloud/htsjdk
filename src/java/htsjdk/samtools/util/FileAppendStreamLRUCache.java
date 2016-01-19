@@ -31,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * LRU cache of OutputStreams to handle situation in which it is necessary to have more FileOutputStreams
  * than resource limits will allow.  Least-recently-used FileOutputStream is closed when it is pushed out of
@@ -49,17 +51,17 @@ public class FileAppendStreamLRUCache extends ResourceLimitedMap<File, OutputStr
     private static class Functor implements ResourceLimitedMapFunctor<File, OutputStream> {
         public OutputStream makeValue(final File file) {
             try {
-                return IOUtil.maybeBufferOutputStream(new FileOutputStream(file, true));
+                return IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(file, true));
             }
-            catch (final FileNotFoundException e) {
+            catch (final IOException e) {
                 // In case the file could not be opened because of too many file handles, try to force
                 // file handles to be closed.
                 System.gc();
                 System.runFinalization();
                 try {
-                    return IOUtil.maybeBufferOutputStream(new FileOutputStream(file, true));
+                    return IOUtil.maybeBufferOutputStream(FileOperate.getOutputStream(file, true));
                 }
-                catch (final FileNotFoundException e2) {
+                catch (final IOException e2) {
                     throw new SAMException(file + "not found", e2);
                 }
             }

@@ -26,6 +26,7 @@
 
 package htsjdk.samtools.sra;
 
+import htsjdk.samtools.util.IOUtil;
 import htsjdk.samtools.util.Log;
 import gov.nih.nlm.ncbi.ngs.NGS;
 
@@ -85,7 +86,7 @@ public class SRAAccession implements Serializable {
     public static boolean isValid(String acc) {
         boolean looksLikeSRA = false;
         File f = new File(acc);
-        if (f.isFile()) {
+        if (IOUtil.isFile(f)) {
             byte[] buffer = new byte[8];
             byte[] signature1 = "NCBI.sra".getBytes();
             byte[] signature2 = "NCBInenc".getBytes();

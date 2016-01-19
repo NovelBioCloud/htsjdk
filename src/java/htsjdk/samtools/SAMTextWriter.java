@@ -33,6 +33,8 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Writer for text-format SAM files.
  */
@@ -61,7 +63,7 @@ public class SAMTextWriter extends SAMFileWriterImpl {
     public SAMTextWriter(final File file) {
         try {
             this.file = file;
-            this.out = new AsciiWriter(new FileOutputStream(file));
+            this.out = new AsciiWriter(FileOperate.getOutputStream(file));
         } catch (IOException e) {
             throw new RuntimeIOException(e);
         }

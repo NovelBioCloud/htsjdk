@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * An example binary codec that encodes / decodes contig / start / stop values via DataInputStreams
  *
@@ -101,7 +103,7 @@ public class ExampleBinaryCodec extends BinaryFeatureCodec<Feature> {
      */
     public static <FEATURE_TYPE extends Feature> void convertToBinaryTest(final File source, final File dest, final FeatureCodec<FEATURE_TYPE, LineIterator> codec) throws IOException {
         final FeatureReader<FEATURE_TYPE> reader = AbstractFeatureReader.getFeatureReader(source.getAbsolutePath(), codec, false); // IndexFactory.loadIndex(idxFile));
-        final OutputStream output = new FileOutputStream(dest);
+        final OutputStream output = FileOperate.getOutputStream(dest);
         ExampleBinaryCodec.convertToBinaryTest(reader, output);
     }
 

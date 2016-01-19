@@ -48,13 +48,15 @@ import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderLineType;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 /**
  * Decode BCF2 files
@@ -210,9 +212,9 @@ public final class BCF2Codec extends BinaryFeatureCodec<VariantContext> {
 
     @Override
     public boolean canDecode( final String path ) {
-        FileInputStream fis = null;
+        InputStream fis = null;
         try {
-            fis = new FileInputStream(path);
+            fis = FileOperate.getInputStream(path);
             final BCFVersion version = BCFVersion.readBCFVersion(fis);
             return version != null && version.getMajorVersion() == ALLOWED_MAJOR_VERSION;
         } catch ( FileNotFoundException e ) {

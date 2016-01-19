@@ -42,6 +42,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * A fasta file driven by an index for fast, concurrent lookups.  Supports two interfaces:
  * the ReferenceSequenceFile for old-style, stateful lookups and a direct getter.
@@ -69,7 +71,7 @@ public class IndexedFastaSequenceFile extends AbstractFastaSequenceFile implemen
      * @throws FileNotFoundException If the fasta or any of its supporting files cannot be found.
      */
     public IndexedFastaSequenceFile(final File file, final FastaSequenceIndex index) {
-        this(file == null ? null : file.toPath(), index);
+        this(file == null ? null : IOUtil.getPath(file), index);
     }
 
     /**
@@ -115,7 +117,7 @@ public class IndexedFastaSequenceFile extends AbstractFastaSequenceFile implemen
 
     private static File findFastaIndex(File fastaFile) {
         File indexFile = getFastaIndexFileName(fastaFile);
-        if (!indexFile.exists()) return null;
+        if (!FileOperate.isFileFolderExist(indexFile)) return null;
         return indexFile;
     }
 
@@ -130,7 +132,7 @@ public class IndexedFastaSequenceFile extends AbstractFastaSequenceFile implemen
     }
 
     public static boolean canCreateIndexedFastaReader(final File fastaFile) {
-        return (fastaFile.exists() &&
+        return (FileOperate.isFileFolderExist(fastaFile) &&
                 findFastaIndex(fastaFile) != null);
     }
 

@@ -28,6 +28,8 @@ import htsjdk.samtools.util.CloseableIterator;
 
 import java.io.File;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 
 /**
  * Command line utility for manipulating SAM/BAM files.
@@ -78,7 +80,7 @@ public class SAMTools {
                 return false;
             }
             mInputFile = new File(args[1]);
-            if (!mInputFile.exists()) {
+            if (!FileOperate.isFileFolderExist(mInputFile)) {
                 System.out.println("Input file not found: " + mInputFile);
                 return false;
             }

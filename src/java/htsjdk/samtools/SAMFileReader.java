@@ -45,6 +45,8 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Class for reading and querying SAM/BAM files.  Delegates to appropriate concrete implementation.
  *
@@ -650,11 +652,11 @@ public class SAMFileReader implements SamReader, SamReader.Indexing {
             BufferedInputStream bufferedStream;
             // Buffering is required because mark() and reset() are called on the input stream.
             final int bufferSize = Math.max(Defaults.BUFFER_SIZE, BlockCompressedStreamConstants.MAX_COMPRESSED_BLOCK_SIZE);
-            if (file != null) bufferedStream = new BufferedInputStream(new FileInputStream(file), bufferSize);
+            if (file != null) bufferedStream = new BufferedInputStream(FileOperate.getInputStream(file), bufferSize);
             else bufferedStream = IOUtil.toBufferedStream(stream);
             if (isBAMFile(bufferedStream)) {
                 mIsBinary = true;
-                if (file == null || !file.isFile()) {
+                if (!IOUtil.isFile(file)) {
                     // Handle case in which file is a named pipe, e.g. /dev/stdin or created by mkfifo
                     mReader = new BAMFileReader(bufferedStream, indexFile, eagerDecode, validationStringency, this.samRecordFactory);
                 } else {
@@ -668,7 +670,7 @@ public class SAMFileReader implements SamReader, SamReader.Indexing {
                 mIsBinary = false;
                 mReader = new SAMTextReader(new GZIPInputStream(bufferedStream), validationStringency, this.samRecordFactory);
             } else if (SamStreams.isCRAMFile(bufferedStream)) {
-                if (file == null || !file.isFile()) {
+                if (!IOUtil.isFile(file)) {
                     file = null;
                 } else {
                     bufferedStream.close();

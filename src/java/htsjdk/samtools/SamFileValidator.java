@@ -62,6 +62,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.novelbio.base.fileOperate.FileOperate;
+
 /**
  * Validates SAM files as follows:
  * <ul>
@@ -168,7 +170,7 @@ public class SamFileValidator {
     public void validateBamFileTermination(final File inputFile) {
         BufferedInputStream inputStream = null;
         try {
-            inputStream = IOUtil.toBufferedStream(new FileInputStream(inputFile));
+            inputStream = IOUtil.toBufferedStream(FileOperate.getInputStream(inputFile));
             if (!BlockCompressedInputStream.isValidFile(inputStream)) {
                 return;
             }

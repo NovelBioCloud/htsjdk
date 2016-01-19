@@ -26,17 +26,20 @@ package htsjdk.samtools;
 import htsjdk.samtools.cram.build.CramIO;
 import htsjdk.samtools.cram.ref.ReferenceSource;
 import htsjdk.samtools.util.IOUtil;
-import org.testng.Assert;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.testng.Assert;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
+import com.novelbio.base.fileOperate.FileOperate;
 
 public class SAMFileWriterFactoryTest {
 
@@ -94,7 +97,7 @@ public class SAMFileWriterFactoryTest {
         final File outputFile = File.createTempFile("roundtrip-out", ".sam");
         outputFile.delete();
         outputFile.deleteOnExit();
-        FileOutputStream os = new FileOutputStream(outputFile);
+        OutputStream os = FileOperate.getOutputStream(outputFile);
         final SAMFileWriterFactory factory = new SAMFileWriterFactory();
         final SAMFileWriter writer = factory.makeSAMWriter(reader.getFileHeader(), false, os);
         for (SAMRecord rec : reader) {
@@ -122,7 +125,7 @@ public class SAMFileWriterFactoryTest {
         final File outputFile = File.createTempFile("nullheader-out", ".sam");
         outputFile.delete();
         outputFile.deleteOnExit();
-        FileOutputStream os = new FileOutputStream(outputFile);
+        OutputStream os = FileOperate.getOutputStream(outputFile);
         final SAMFileWriterFactory factory = new SAMFileWriterFactory();
         final SAMFileWriter writer = factory.makeSAMWriter(reader.getFileHeader(), false, os);
         for (SAMRecord rec : reader) {
@@ -270,7 +273,7 @@ public class SAMFileWriterFactoryTest {
         final File referenceFile = new File(TEST_DATA_DIR, "hg19mini.fasta");
 
         // Note: does not honor factory settings for CREATE_MD5 or CREATE_INDEX.
-        final SAMFileWriter samWriter = factory.makeCRAMWriter(header, new FileOutputStream(outputFile), referenceFile);
+        final SAMFileWriter samWriter = factory.makeCRAMWriter(header, FileOperate.getOutputStream(outputFile), referenceFile);
         int nRecs = fillSmallBam(samWriter);
         samWriter.close();
 
