@@ -992,21 +992,22 @@ public class IOUtil {
 	 * @return
 	 */
 	public static Path getPath(String fileName) {
-		if (StringOperate.isRealNull(fileName)) return null;
-		if (fileName.startsWith(PathDetail.getHdpHdfsHeadSymbol())) {
-			fileName = fileName.replaceFirst(PathDetail.getHdpHdfsHeadSymbol(), "hdfs:");
-        }
-		try {
-			if (fileName.startsWith( "hdfs:")) {
-				URI uri = new URI(fileName);
-				return Paths.get(uri);
-			} else {
-				File file = new File(fileName);
-				return file.toPath();
-			}
-		} catch (Exception e) {
-			throw new ExceptionFileError("cannot get path from " + fileName);
-        }
+//		if (StringOperate.isRealNull(fileName)) return null;
+//		if (fileName.startsWith(PathDetail.getHdpHdfsHeadSymbol())) {
+//			fileName = fileName.replaceFirst(PathDetail.getHdpHdfsHeadSymbol(), "hdfs:");
+//        }
+//		try {
+//			if (fileName.startsWith( "hdfs:")) {
+//				URI uri = new URI(fileName);
+//				return Paths.get(uri);
+//			} else {
+//				File file = new File(fileName);
+//				return file.toPath();
+//			}
+//		} catch (Exception e) {
+//			throw new ExceptionFileError("cannot get path from " + fileName);
+//        }
+		return FileOperate.getPath(fileName);
 	}
 
 	/**

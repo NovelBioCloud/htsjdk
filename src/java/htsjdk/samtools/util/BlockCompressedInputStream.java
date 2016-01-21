@@ -42,6 +42,8 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import com.novelbio.base.fileOperate.FileOperate;
+import com.novelbio.base.fileOperate.RandomFileInt;
+import com.novelbio.base.fileOperate.RandomFileInt.RandomFileFactory;
 
 /*
  * Utility class for reading BGZF block compressed files.  The caller can treat this file like any other InputStream.
@@ -462,7 +464,7 @@ public class BlockCompressedInputStream extends InputStream implements LocationA
         if (fileSize < BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length) {
             return FileTermination.DEFECTIVE;
         }
-        final RandomAccessFile raFile = new RandomAccessFile(file, "r");
+        final RandomFileInt raFile = RandomFileFactory.createInstance(file);
         try {
             raFile.seek(fileSize - BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length);
             byte[] buf = new byte[BlockCompressedStreamConstants.EMPTY_GZIP_BLOCK.length];
