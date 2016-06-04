@@ -737,7 +737,7 @@ public class IOUtil {
 //
 //        success = success && fileOrDirectory.delete();
 //        return success;
-    	FileOperate.DeleteFileFolder(getPath(fileOrDirectory));
+    	FileOperate.deleteFileFolder(getPath(fileOrDirectory));
     	return true;
     }
 
